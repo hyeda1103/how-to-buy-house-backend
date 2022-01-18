@@ -1,0 +1,123 @@
+import mongoose, { Schema, SchemaOptions } from 'mongoose';
+
+interface IUser {
+  _id: string;
+  name: string;
+  email: string;
+  profilePhoto: string;
+  postCount: Number;
+  isBlocked: Boolean;
+  password: string;
+  isAdmin: boolean;
+  role: String;
+  isFollowing: Boolean;
+  isUnFollowing: Boolean;
+  isAccountVerified: Boolean;
+  accountVerificationToken: String;
+  accountVerificationTokenExpires: Date;
+  viewedBy: Array<typeof Schema.Types.ObjectId>;
+  followers: Array<typeof Schema.Types.ObjectId>;
+  following: Array<typeof Schema.Types.ObjectId>;
+  passwordChangeAt: Date;
+  passwordResetToken: String;
+  passwordResetExpires: Date;
+  active: Boolean;
+}
+
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    profilePhoto: {
+      type: String,
+      default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    postCount: {
+      type: Number,
+      default: 0,
+    },
+    isBlocked: {
+      type: Boolean,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    role: {
+      type: String,
+      enum: ['Admin', 'Guest', 'Blogger'],
+    },
+    isFollowing: {
+      type: Boolean,
+      default: false,
+    },
+    isUnFollowing: {
+      type: Boolean,
+      default: false,
+    },
+    isAccountVerified: {
+      type: Boolean,
+      default: false,
+    },
+    accountVerificationToken: String,
+    accountVerificationTokenExpires: {
+      type: Date,
+    },
+    viewedBy: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
+    },
+    followers: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
+    },
+    following: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
+    },
+    passwordChangeAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
+    timestamps: true,
+  } as SchemaOptions,
+);
+
+const User = mongoose.model('User', userSchema);
+
+export default User;
