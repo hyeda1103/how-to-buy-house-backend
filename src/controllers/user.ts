@@ -65,3 +65,15 @@ export const deleteUser = expressAsyncHandler(async (req: Request, res: Response
     res.json(error);
   }
 });
+
+export const fetchUserDetails = expressAsyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  // Check if user id is valid
+  validateDB(id);
+  try {
+    const user = await User.findById(id);
+    res.json(user);
+  } catch (error) {
+    res.json(error);
+  }
+});
