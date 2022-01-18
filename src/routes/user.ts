@@ -1,10 +1,13 @@
 import express from 'express';
 
-import { fetchAllUser, userLogin, userRegister } from '../controllers/user';
+import {
+  deleteUser, fetchAllUser, userLogin, userRegister,
+} from '../controllers/user';
 
 const userRoutes = express.Router();
 
 userRoutes.get('/', fetchAllUser);
+userRoutes.delete('/:id', deleteUser);
 userRoutes.post('/register', userRegister);
 userRoutes.post('/login', userLogin);
 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 
+import validateDB from '../utils/validateDB';
 import User from '../models/user';
 import generateToken from '../config/token/generateToken';
 
@@ -48,6 +49,18 @@ export const fetchAllUser = expressAsyncHandler(async (req: Request, res: Respon
   try {
     const users = await User.find({});
     res.json(users);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+export const deleteUser = expressAsyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  // Check if user id is valid
+  validateDB(id);
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+    res.json(deletedUser);
   } catch (error) {
     res.json(error);
   }
