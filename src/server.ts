@@ -1,9 +1,8 @@
-import express, {
-  Application, Request, Response,
-} from 'express';
+import express, { Application } from 'express';
 import dotenv from 'dotenv';
 
 import connectDB from './config/db/dbConnect';
+import userRoutes from './routes/user';
 
 dotenv.config();
 
@@ -12,8 +11,10 @@ const PORT = process.env.PORT || 5000;
 
 connectDB();
 
-app.use('/', (req: Request, res: Response) => {
-  res.status(200).send({ data: 'Hello World' });
-});
+// Middleware
+app.use(express.json());
+
+// Route
+app.use('/api/users', userRoutes);
 
 app.listen(PORT, () => console.log(`Server is listening on port ${PORT}!`));
