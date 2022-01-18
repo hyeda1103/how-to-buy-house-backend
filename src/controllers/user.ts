@@ -27,11 +27,15 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
   // Check if user exists
   const userFound = await User.findOne({ email });
   if (userFound && (await userFound.matchPassword(password))) {
+    const {
+      _id, name, email, profilePhoto, isAdmin,
+    } = userFound;
     res.json({
-      name: userFound.name,
-      email: userFound.email,
-      profilePhoto: userFound.profilePhoto,
-      isAdmin: userFound.isAdmin,
+      _id,
+      name,
+      email,
+      profilePhoto,
+      isAdmin,
       token: generateToken(userFound.id),
     });
   } else {
@@ -40,6 +44,11 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
   }
 });
 
-export const fetchAllUser = (req: Request, res: Response) => {
-  res.json({ user: 'Fetch All Users' });
-};
+export const fetchAllUser = expressAsyncHandler(async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.json(error);
+  }
+});

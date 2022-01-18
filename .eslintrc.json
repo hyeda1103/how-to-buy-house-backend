@@ -17,6 +17,8 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "react/jsx-filename-extension": "off"
+        "react/jsx-filename-extension": "off",
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/no-shadow": "off"
     }
 }
