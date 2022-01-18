@@ -1,12 +1,19 @@
 import express, {
   Application, Request, Response,
 } from 'express';
+import dotenv from 'dotenv';
+
+import connectDB from './config/db/dbConnect';
+
+dotenv.config();
 
 const app: Application = express();
-const port = 5000;
+const PORT = process.env.PORT || 5000;
+
+connectDB();
 
 app.use('/', (req: Request, res: Response) => {
-  res.status(200).send({ data: 'Hello from Ornio AS' });
+  res.status(200).send({ data: 'Hello World' });
 });
 
-app.listen(port, () => console.log(`Server is listening on port ${port}!`));
+app.listen(PORT, () => console.log(`Server is listening on port ${PORT}!`));
