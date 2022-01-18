@@ -1,8 +1,9 @@
-import mongoose, { Schema, SchemaOptions } from 'mongoose';
+import mongoose, {
+  Schema, Document, SchemaOptions,
+} from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 interface IUser {
-  _id: string;
   name: string;
   email: string;
   profilePhoto: string;
@@ -25,7 +26,11 @@ interface IUser {
   active: Boolean;
 }
 
-const userSchema = new Schema<IUser>(
+interface IUserDocument extends IUser, Document {
+  matchPassword: (password: string) => Promise<boolean>
+}
+
+const userSchema = new Schema<IUserDocument>(
   {
     name: {
       type: String,
@@ -125,6 +130,10 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-const User = mongoose.model('User', userSchema);
+userSchema.methods.matchPassword = async function (password: string) {
+  return bcrypt.compare(password, this.password);
+};
+
+const User = mongoose.model<IUserDocument>('User', userSchema);
 
 export default User;
