@@ -19,6 +19,13 @@
     "rules": {
         "react/jsx-filename-extension": "off",
         "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/no-shadow": "off"
+        "@typescript-eslint/no-shadow": "off",
+        "prefer-destructuring": [
+            "error",
+            {
+                "object": true,
+                "array": false
+            }
+        ]
     }
 }
