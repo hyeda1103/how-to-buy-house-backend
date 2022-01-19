@@ -12,18 +12,18 @@ const authMiddleware = expressAsyncHandler(async (req: any, res: Response, next:
       if (token) {
         const decoded = jwt.verify(token, `${process.env.JWT_SECRET}`) as JwtPayload;
         // Find the user by id
-        const user = await User.findById(decoded.id).select('-password');
+        const user = await User.findById(decoded._id).select('-password');
         // Attach the user to the request object
         req.user = user;
         next();
-      } else {
-        res.status(401);
-        throw new Error('Not authorized, no token');
       }
     } catch (error) {
       res.status(401);
       throw new Error('Not authorized, token expired, login again');
     }
+  } else {
+    res.status(401);
+    throw new Error('There is no token attached to the header');
   }
 });
 

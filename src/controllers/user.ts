@@ -77,3 +77,41 @@ export const fetchUserDetails = expressAsyncHandler(async (req: Request, res: Re
     res.json(error);
   }
 });
+
+export const fetchUserProfile = expressAsyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  validateDB(id);
+  try {
+    const profile = await User.findById(id);
+    res.json(profile);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+export const updateUserProfile = expressAsyncHandler(async (req: any, res: Response) => {
+  const { _id } = req.user;
+  validateDB(_id);
+  const user = await User.findByIdAndUpdate(_id, {
+    name: req.body.name,
+    email: req.body.email,
+  }, {
+    new: true,
+    runValidators: true,
+  });
+  res.json(user);
+});
+
+export const updateUserPassword = expressAsyncHandler(async (req: any, res: Response) => {
+  // destructure the login user
+  const { _id } = req.user;
+  const { password } = req.body;
+  validateDB(_id);
+  // find the user by _id
+  const user = await User.findById(_id);
+  if (user && password) {
+    user.password = password;
+    const updatedUser = await user.save();
+    res.json(updatedUser);
+  }
+});
