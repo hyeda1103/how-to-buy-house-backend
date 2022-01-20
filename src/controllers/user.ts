@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
+import sgMail from '@sendgrid/mail';
 
 import validateDB from '../utils/validateDB';
 import User from '../models/user';
@@ -190,4 +191,23 @@ export const unBlockUser = expressAsyncHandler(async (req: any, res: Response) =
   });
 
   res.json(user);
+});
+
+export const generateVerificationToken = expressAsyncHandler(async (req: any, res: Response) => {
+  await sgMail.setApiKey(`${process.env.SENDGRID_API_KEY}`);
+
+  try {
+    // Build your message
+    const message = {
+      to: 'dalgona92@gmail.com',
+      from: 'mongryong.in.the.house@gmail.com',
+      subject: '잘 살아보세',
+      text: '잘 살아보세~',
+    };
+
+    await sgMail.send(message);
+    res.json('Email sent successfully');
+  } catch (error) {
+    res.json(error);
+  }
 });

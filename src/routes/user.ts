@@ -2,6 +2,7 @@ import express from 'express';
 
 import authMiddleware from '../middlewares/auth';
 import {
+  generateVerificationToken,
   deleteUser,
   fetchAllUser,
   fetchUserDetails,
@@ -21,6 +22,7 @@ const userRoutes = express.Router();
 userRoutes.get('/', fetchAllUser);
 userRoutes.post('/login', userLogin);
 userRoutes.post('/register', userRegister);
+userRoutes.post('/send-mail', generateVerificationToken);
 userRoutes.put('/password', authMiddleware, updateUserPassword);
 userRoutes.put('/follow', authMiddleware, followUser);
 userRoutes.put('/unfollow', authMiddleware, unFollowUser);
