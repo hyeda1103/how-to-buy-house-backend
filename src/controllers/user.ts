@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
+import sgMail from '@sendgrid/mail';
+import crypto from 'crypto';
 
 import validateDB from '../utils/validateDB';
 import User from '../models/user';
@@ -189,5 +191,65 @@ export const unBlockUser = expressAsyncHandler(async (req: any, res: Response) =
     new: true,
   });
 
+  res.json(user);
+});
+
+// @desc    Generate Email Verification Token
+// @route   POST /api/users/generate-verification-token
+// @access  Private
+export const generateVerificationToken = expressAsyncHandler(async (req: any, res: Response) => {
+  sgMail.setApiKey(`${process.env.SENDGRID_API_KEY}`);
+
+  const loginUserId = req.user.id;
+
+  const user = await User.findById(loginUserId);
+  try {
+    // Generate token
+    const verificationToken = await user?.createAccountVerificationToken();
+    // Save the user with newly created account verification token
+    await user?.save();
+    // Build your message
+    const resetURL = `If you were requested to verify your account, verify now within 10 minutes,
+      otherwise ignore this message
+      <a href="http://localhost:3000/verify-account/${verificationToken}">Click to verify your account</a>.`;
+    const message = {
+      to: 'dalgona92@gmail.com',
+      from: 'mongryong.in.the.house@gmail.com',
+      subject: '잘 살아보세',
+      html: resetURL,
+    };
+
+    await sgMail.send(message);
+    res.json(resetURL);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Account Verification
+// @route   PUT /api/users/verify-account
+// @access  Private
+export const accountVerification = expressAsyncHandler(async (req: any, res: Response) => {
+  const { token } = req.body;
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  // Find this user by token
+  // Update the property to true
+  const user = await User.findOneAndUpdate({
+    accountVerificationToken: hashedToken,
+    accountVerificationTokenExpires: { $gt: new Date() },
+  }, {
+    $set: {
+      isAccountVerified: true,
+    },
+    $unset: {
+      accountVerificationToken: '',
+      accountVerificationTokenExpires: '',
+    },
+  });
+
+  if (!user) throw new Error('Token expired, try again later');
+
+  await user.save();
   res.json(user);
 });
