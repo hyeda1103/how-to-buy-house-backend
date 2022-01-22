@@ -215,7 +215,7 @@ export const generateVerificationToken = expressAsyncHandler(async (req: any, re
     const message = {
       to: 'dalgona92@gmail.com',
       from: 'mongryong.in.the.house@gmail.com',
-      subject: '잘 살아보세',
+      subject: 'Verify Account',
       html: resetURL,
     };
 
@@ -250,6 +250,65 @@ export const accountVerification = expressAsyncHandler(async (req: any, res: Res
 
   if (!user) throw new Error('Token expired, try again later');
 
+  await user.save();
+  res.json(user);
+});
+
+// @desc    Generate token for forgot password functionality
+// @route   PUT /api/users/generate-forgot-password-token
+// @access  Private
+export const generateForgotPasswordToken = expressAsyncHandler(async (req: any, res: Response) => {
+  sgMail.setApiKey(`${process.env.SENDGRID_API_KEY}`);
+
+  // Find the user by email address
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) throw new Error('User Not Found');
+
+  try {
+    const resetPasswordToken = await user.createPasswordResetToken();
+    await user.save();
+
+    // Build your message
+    const resetURL = `A verification message is successfully sent to ${user.email}. Reset now within 10 minutes,
+      otherwise ignore this message
+      <a href="http://localhost:3000/reset-password/${resetPasswordToken}">Click to verify your account</a>.`;
+    const message = {
+      to: email,
+      from: 'mongryong.in.the.house@gmail.com',
+      subject: 'Reset Password',
+      html: resetURL,
+    };
+    await sgMail.send(message);
+    res.json(resetURL);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Reset Password
+// @route   PUT /api/users/generate-forgot-password-token
+// @access  Private
+export const resetPassword = expressAsyncHandler(async (req: any, res: Response) => {
+  const { token, password } = req.body;
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  // Find this user by token
+  const user = await User.findOneAndUpdate({
+    passwordResetToken: hashedToken,
+    passwordResetTokenExpires: {
+      $gt: Date.now(),
+    },
+  }, {
+    $set: {
+      password,
+    },
+    $unset: {
+      passwordResetToken: '',
+      passwordResetTokenExpires: '',
+    },
+  });
+
+  if (!user) throw new Error('Token Expired, try again later');
   await user.save();
   res.json(user);
 });

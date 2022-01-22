@@ -23,13 +23,14 @@ interface IUser {
   following: Array<typeof Schema.Types.ObjectId>;
   passwordChangeAt: Date;
   passwordResetToken: String;
-  passwordResetExpires: Date;
+  passwordResetTokenExpires: Date;
   active: Boolean;
 }
 
 interface IUserDocument extends IUser, Document {
   matchPassword: (password: string) => Promise<boolean>
   createAccountVerificationToken: () => string
+  createPasswordResetToken: () => string
 }
 
 const userSchema = new Schema<IUserDocument>(
@@ -109,7 +110,7 @@ const userSchema = new Schema<IUserDocument>(
     },
     passwordChangeAt: Date,
     passwordResetToken: String,
-    passwordResetExpires: Date,
+    passwordResetTokenExpires: Date,
     active: {
       type: Boolean,
       default: false,
@@ -153,6 +154,19 @@ userSchema.methods.createAccountVerificationToken = async function () {
 
   this.accountVerificationTokenExpires = Date.now() + 30 * 60 * 1000; // 10 min
   return verificationToken;
+};
+
+// Password reset
+userSchema.methods.createPasswordResetToken = async function () {
+  // Create a token
+  const resetPasswordToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetPasswordToken)
+    .digest('hex');
+
+  this.passwordResetTokenExpires = Date.now() + 30 * 60 * 1000; // 10 min
+  return resetPasswordToken;
 };
 
 const User = mongoose.model<IUserDocument>('User', userSchema);
