@@ -2,6 +2,7 @@ import mongoose, {
   Schema, Document, SchemaOptions,
 } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 interface IUser {
   name: string;
@@ -28,6 +29,7 @@ interface IUser {
 
 interface IUserDocument extends IUser, Document {
   matchPassword: (password: string) => Promise<boolean>
+  createAccountVerificationToken: () => string
 }
 
 const userSchema = new Schema<IUserDocument>(
@@ -138,6 +140,19 @@ userSchema.pre('save', async function (next) {
 // Match password
 userSchema.methods.matchPassword = async function (password: string) {
   return bcrypt.compare(password, this.password);
+};
+
+// Verify account
+userSchema.methods.createAccountVerificationToken = async function () {
+  // Create a token
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  this.accountVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  this.accountVerificationTokenExpires = Date.now() + 30 * 60 * 1000; // 10 min
+  return verificationToken;
 };
 
 const User = mongoose.model<IUserDocument>('User', userSchema);
