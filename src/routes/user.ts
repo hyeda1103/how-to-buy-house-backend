@@ -3,6 +3,8 @@ import express from 'express';
 import authMiddleware from '../middlewares/auth';
 import {
   generateVerificationToken,
+  generateForgotPasswordToken,
+  resetPassword,
   accountVerification,
   deleteUser,
   fetchAllUser,
@@ -24,6 +26,8 @@ userRoutes.get('/', fetchAllUser);
 userRoutes.post('/login', userLogin);
 userRoutes.post('/register', userRegister);
 userRoutes.post('/generate-verification-token', authMiddleware, generateVerificationToken);
+userRoutes.post('/generate-forgot-password-token', authMiddleware, generateForgotPasswordToken);
+userRoutes.post('/reset-password', authMiddleware, resetPassword);
 userRoutes.put('/verify-account', authMiddleware, accountVerification);
 userRoutes.put('/password', authMiddleware, updateUserPassword);
 userRoutes.put('/follow', authMiddleware, followUser);
