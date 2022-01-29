@@ -130,6 +130,7 @@ const userSchema = new Schema<IUserDocument>(
 // Hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
+    console.log('!isModified');
     next();
   }
   // hash password

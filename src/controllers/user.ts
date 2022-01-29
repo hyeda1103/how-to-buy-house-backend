@@ -299,9 +299,6 @@ export const resetPassword = expressAsyncHandler(async (req: any, res: Response)
       $gt: Date.now(),
     },
   }, {
-    $set: {
-      password,
-    },
     $unset: {
       passwordResetToken: '',
       passwordResetTokenExpires: '',
@@ -309,6 +306,16 @@ export const resetPassword = expressAsyncHandler(async (req: any, res: Response)
   });
 
   if (!user) throw new Error('Token Expired, try again later');
+
+  // Update the password
+  user.password = password;
   await user.save();
   res.json(user);
+});
+
+// @desc    Upload Profile
+// @route   PUT /api/users/profile-photo
+// @access  Private
+export const uploadProfilePhoto = expressAsyncHandler(async (req: any, res: Response) => {
+  res.json('Upload');
 });
