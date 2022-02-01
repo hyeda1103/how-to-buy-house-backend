@@ -41,3 +41,22 @@ export const imageResizeMiddleware = async (req: Request, res: Response, next: N
 
   return next();
 };
+
+// Pist Image Resizing
+export const PostImageResizeMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // Check if there is no file
+  if (!req.file) return next();
+  req.file.filename = `user-${Date.now()}-${req.file.originalname}`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(path.join(`public/images/posts/${req.file.filename}`));
+
+  return next();
+};

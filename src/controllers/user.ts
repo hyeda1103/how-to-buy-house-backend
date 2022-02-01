@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import sgMail from '@sendgrid/mail';
 import crypto from 'crypto';
+import fs from 'fs';
 
 import { ImageUploaded } from '../types';
 import validateDB from '../utils/validateDB';
@@ -75,7 +76,7 @@ export const fetchUserDetails = expressAsyncHandler(async (req: Request, res: Re
   // Check if user id is valid
   validateDB(id);
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate('posts');
     res.json(user);
   } catch (error) {
     res.json(error);
@@ -325,10 +326,12 @@ export const uploadProfilePhoto = expressAsyncHandler(async (req: any, res: Resp
   const localPath = `public/images/profile/${req.file.filename}`;
   // Upload to cloudinary
   const imageUploaded = await cloudinaryImageUpload(localPath);
-  const user = await User.findByIdAndUpdate(_id, {
+  await User.findByIdAndUpdate(_id, {
     profilePhoto: (imageUploaded as ImageUploaded)?.url,
   }, {
     new: true,
   });
-  res.json(user);
+  // Remove the saved image
+  fs.unlinkSync(localPath);
+  res.json(imageUploaded);
 });
