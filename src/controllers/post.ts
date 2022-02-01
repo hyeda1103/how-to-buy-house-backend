@@ -71,7 +71,7 @@ export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Res
   const { id } = req.params;
   validateDB(id);
   try {
-    const post = await Post.findById(id);
+    const post = await Post.findById(id).populate('dislikes').populate('likes');
     // Update number of views
     await Post.findByIdAndUpdate(id, {
       $inc: { viewCounts: 1 },
@@ -125,20 +125,19 @@ export const toggleLikeToPost = expressAsyncHandler(async (req: any, res: Respon
   // Find the login user
   const loginUserId = req.user?.id;
   // Find if this user has liked this post already
-  const { isLiked, disLikes } = post;
+  const { isLiked, dislikes } = post;
   // Check if this user has disliked this post
-  const alreadyDisLiked = disLikes?.find(
+  const alreadyDisLiked = dislikes?.find(
     (userId: string) => userId?.toString() === loginUserId.toString(),
   );
   // Remove the user from dislikes array if exists
   if (alreadyDisLiked) {
-    const post = await Post.findByIdAndUpdate(postId, {
-      $pull: { disLikes: loginUserId },
+    await Post.findByIdAndUpdate(postId, {
+      $pull: { dislikes: loginUserId },
       isDisLiked: false,
     }, {
       new: true,
     });
-    res.json(post);
   }
   // Toggle
   // Remove the user if she/he has liked the post
@@ -155,6 +154,51 @@ export const toggleLikeToPost = expressAsyncHandler(async (req: any, res: Respon
     const post = await Post.findByIdAndUpdate(postId, {
       $push: { likes: loginUserId },
       isLiked: true,
+    }, {
+      new: true,
+    });
+    res.json(post);
+  }
+});
+
+// @desc    Dislike a post
+// @route   PUT /api/posts/dislikes
+// @access  Private
+export const toggleDislikeToPost = expressAsyncHandler(async (req: any, res: Response) => {
+  // Find the post to be disliked
+  const { postId } = req.body;
+  const post = await Post.findById(postId);
+  // Find the login user
+  const loginUserId = req.user?.id;
+  // Check if the user has already disLiked this post
+  const { likes, isDisLiked } = post;
+  // Check if the user has already liked this post
+  const alreadyLiked = likes?.find(
+    (userId: string) => userId.toString() === loginUserId?.toString(),
+  );
+  // Remove the user from likes array if exists
+  if (alreadyLiked) {
+    await Post.findOneAndUpdate(postId, {
+      $pull: { likes: loginUserId },
+      isLiked: false,
+    }, {
+      new: true,
+    });
+  }
+  // Toggle
+  // Remove this user from dislikes if already disliked
+  if (isDisLiked) {
+    const post = await Post.findByIdAndUpdate(postId, {
+      $pull: { dislikes: loginUserId },
+      isDisLiked: false,
+    }, {
+      new: true,
+    });
+    res.json(post);
+  } else {
+    const post = await Post.findByIdAndUpdate(postId, {
+      $push: { dislikes: loginUserId },
+      isDisLiked: true,
     }, {
       new: true,
     });
