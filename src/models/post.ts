@@ -3,12 +3,12 @@ import mongoose, { Schema } from 'mongoose';
 const postSchema = new Schema({
   title: {
     type: String,
-    // required: [true, '제목은 필수항목입니다'],
+    required: [true, '제목은 필수항목입니다'],
     trim: true,
   },
   category: {
     type: String,
-    // required: [true, '카테고리는 필수항목입니다'],
+    required: [true, '카테고리는 필수항목입니다'],
     default: 'All',
   },
   isLiked: {
@@ -42,7 +42,7 @@ const postSchema = new Schema({
   },
   description: {
     type: String,
-    // required: [true, '설명은 필수항목입니다'],
+    required: [true, '설명은 필수항목입니다'],
   },
   image: {
     type: String,

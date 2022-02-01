@@ -1,14 +1,18 @@
 import { Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
+import fs from 'fs';
 
-import { ImageUploaded } from 'types';
+// import { ImageUploaded } from 'types';
 import User from '../models/user';
-import Post from '../models/post';
+// import Post from '../models/post';
 import validateDB from '../utils/validateDB';
 import cloudinaryImageUpload from '../utils/cloudinary';
+import Post from '../models/post';
 
-/* eslint-disable import/prefer-default-export */
+// @desc    Create post
+// @route   POST /api/posts
+// @access  Private
 export const createPost = expressAsyncHandler(async (req: any, res: Response) => {
   const { _id } = req.user;
   validateDB(_id);
@@ -35,11 +39,39 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   // Upload to cloudinary
   const imageUploaded = await cloudinaryImageUpload(localPath);
   try {
-    const post = await Post.create({
-      ...req.body,
-      image: (imageUploaded as ImageUploaded)?.url,
-      user: _id,
-    });
+    // const post = await Post.create({
+    //   ...req.body,
+    //   image: (imageUploaded as ImageUploaded)?.url,
+    //   user: _id,
+    // });
+    res.json(imageUploaded);
+    // Remove uploaded image
+    fs.unlinkSync(localPath);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Fetch all post
+// @route   GET /api/posts
+// @access  Public
+export const fetchAllPost = expressAsyncHandler(async (req: any, res: Response) => {
+  try {
+    const posts = await Post.find({}).populate('user');
+    res.json(posts);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Fetch a single post
+// @route   GET /api/posts
+// @access  Public
+export const fetchSinglePost = expressAsyncHandler(async (req: any, res: Response) => {
+  const { id } = req.params;
+  validateDB(id);
+  try {
+    const post = await Post.findById(id);
     res.json(post);
   } catch (error) {
     res.json(error);

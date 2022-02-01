@@ -4,10 +4,14 @@ import authMiddleware from '../middlewares/auth';
 import { imageUploadMiddleware, PostImageResizeMiddleware } from '../middlewares/imageUpload';
 import {
   createPost,
+  fetchAllPost,
+  fetchSinglePost,
 } from '../controllers/post';
 
 const postRoutes = express.Router();
 
 postRoutes.post('/', authMiddleware, imageUploadMiddleware.single('image'), PostImageResizeMiddleware, createPost);
+postRoutes.get('/', fetchAllPost);
+postRoutes.get('/:id', fetchSinglePost);
 
 export default postRoutes;
