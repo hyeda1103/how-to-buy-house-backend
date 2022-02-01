@@ -72,6 +72,10 @@ export const fetchSinglePost = expressAsyncHandler(async (req: any, res: Respons
   validateDB(id);
   try {
     const post = await Post.findById(id);
+    // Update number of views
+    await Post.findByIdAndUpdate(id, {
+      $inc: { viewCounts: 1 },
+    });
     res.json(post);
   } catch (error) {
     res.json(error);
