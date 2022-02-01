@@ -5,6 +5,7 @@ import connectDB from './config/db/dbConnect';
 import userRoutes from './routes/user';
 import postRoutes from './routes/post';
 import commentRoutes from './routes/comment';
+import emailRoutes from './routes/emailMessage';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 
 dotenv.config();
@@ -24,6 +25,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 // Comment route
 app.use('/api/comments', commentRoutes);
+// Email Message route
+app.use('/api/email', emailRoutes);
 
 // Error Handling
 app.use(notFound);

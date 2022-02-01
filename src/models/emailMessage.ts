@@ -1,11 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
 
 const emailMessageSchema = new Schema({
-  fromEmail: {
+  from: {
     type: String,
     required: true,
   },
-  toEmail: {
+  to: {
     type: String,
     required: true,
   },
