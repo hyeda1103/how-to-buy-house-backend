@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
-import fs from 'fs';
+// import fs from 'fs';
 
 // import { ImageUploaded } from 'types';
 import User from '../models/user';
 // import Post from '../models/post';
 import validateDB from '../utils/validateDB';
-import cloudinaryImageUpload from '../utils/cloudinary';
+// import cloudinaryImageUpload from '../utils/cloudinary';
 import Post from '../models/post';
 
 // @desc    Create post
@@ -35,13 +35,18 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   }
 
   // Get the oath to img
-  const localPath = `public/images/posts/${req.file.filename}`;
+  // const localPath = `public/images/posts/${req.file.filename}`;
   // Upload to cloudinary
-  const imageUploaded = await cloudinaryImageUpload(localPath);
+  // const imageUploaded = await cloudinaryImageUpload(localPath);
   try {
-    res.json(imageUploaded);
+    const post = await Post.create({
+      ...req.body,
+      user: _id,
+    });
+    res.json(post);
+    // res.json(imageUploaded);
     // Remove uploaded image
-    fs.unlinkSync(localPath);
+    // fs.unlinkSync(localPath);
   } catch (error) {
     res.json(error);
   }
