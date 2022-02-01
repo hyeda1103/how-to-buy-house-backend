@@ -24,3 +24,15 @@ export const fetchAllCategories = expressAsyncHandler((async (req: any, res: Res
     res.json(error);
   }
 }));
+
+export const fetchSingleCategory = expressAsyncHandler((async (req: any, res: Response) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findById(id)
+      .populate('user')
+      .sort('-createdAt');
+    res.json(category);
+  } catch (error) {
+    res.json(error);
+  }
+}));
