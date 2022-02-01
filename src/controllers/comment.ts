@@ -2,7 +2,10 @@ import { Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 
 import Comment from '../models/comment';
-/* eslint-disable import/prefer-default-export */
+
+// @desc    Create a comment
+// @route   PUT /api/comments
+// @access  Private
 export const createComment = expressAsyncHandler(async (req: any, res: Response) => {
   // Get the user
   const { user } = req;
@@ -15,6 +18,18 @@ export const createComment = expressAsyncHandler(async (req: any, res: Response)
       description,
     });
     res.json(comment);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Fetch all comments
+// @route   GET /api/comments
+// @access  Private
+export const fetchAllComment = expressAsyncHandler(async (req: any, res: Response) => {
+  try {
+    const comments = await Comment.find({}).sort('-created');
+    res.json(comments);
   } catch (error) {
     res.json(error);
   }
