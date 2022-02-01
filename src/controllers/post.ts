@@ -3,12 +3,11 @@ import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
 // import fs from 'fs';
 
-// import { ImageUploaded } from 'types';
+import { ImageUploaded } from 'types';
 import User from '../models/user';
-// import Post from '../models/post';
-import validateDB from '../utils/validateDB';
-// import cloudinaryImageUpload from '../utils/cloudinary';
 import Post from '../models/post';
+import validateDB from '../utils/validateDB';
+import cloudinaryImageUpload from '../utils/cloudinary';
 
 // @desc    Create post
 // @route   POST /api/posts
@@ -42,11 +41,11 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
     const post = await Post.create({
       ...req.body,
       user: _id,
+      image: (imageUploaded as ImageUploaded)?.url,
     });
-    res.json(post);
-    // res.json(imageUploaded);
     // Remove uploaded image
-    // fs.unlinkSync(localPath);
+    fs.unlinkSync(localPath);
+    res.json(post);
   } catch (error) {
     res.json(error);
   }
