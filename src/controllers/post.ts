@@ -39,11 +39,6 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   // Upload to cloudinary
   const imageUploaded = await cloudinaryImageUpload(localPath);
   try {
-    // const post = await Post.create({
-    //   ...req.body,
-    //   image: (imageUploaded as ImageUploaded)?.url,
-    //   user: _id,
-    // });
     res.json(imageUploaded);
     // Remove uploaded image
     fs.unlinkSync(localPath);
