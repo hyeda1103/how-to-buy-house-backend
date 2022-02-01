@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
 import fs from 'fs';
@@ -55,7 +55,7 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
 // @desc    Fetch all post
 // @route   GET /api/posts
 // @access  Public
-export const fetchAllPost = expressAsyncHandler(async (req: any, res: Response) => {
+export const fetchAllPost = expressAsyncHandler(async (req: Request, res: Response) => {
   try {
     const posts = await Post.find({}).populate('user');
     res.json(posts);
@@ -67,7 +67,7 @@ export const fetchAllPost = expressAsyncHandler(async (req: any, res: Response) 
 // @desc    Fetch a single post
 // @route   GET /api/posts
 // @access  Public
-export const fetchSinglePost = expressAsyncHandler(async (req: any, res: Response) => {
+export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   validateDB(id);
   try {
@@ -75,6 +75,25 @@ export const fetchSinglePost = expressAsyncHandler(async (req: any, res: Respons
     // Update number of views
     await Post.findByIdAndUpdate(id, {
       $inc: { viewCounts: 1 },
+    });
+    res.json(post);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Update a post
+// @route   PUT /api/posts
+// @access  Private
+export const updatePost = expressAsyncHandler(async (req: any, res: Response) => {
+  const { id } = req.params;
+  validateDB(id);
+  try {
+    const post = await Post.findByIdAndUpdate(id, {
+      ...req.body,
+      user: req.user?.id,
+    }, {
+      new: true,
     });
     res.json(post);
   } catch (error) {
