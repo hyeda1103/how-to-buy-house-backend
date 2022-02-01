@@ -2,6 +2,9 @@ import { Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Category from '../models/category';
 
+// @desc    Create a category
+// @route   POST /api/category
+// @access  Private
 export const createCategory = expressAsyncHandler((async (req: any, res: Response) => {
   try {
     const category = await Category.create({
@@ -14,6 +17,9 @@ export const createCategory = expressAsyncHandler((async (req: any, res: Respons
   }
 }));
 
+// @desc    Fetch all categories
+// @route   GET /api/category
+// @access  Private
 export const fetchAllCategories = expressAsyncHandler((async (req: any, res: Response) => {
   try {
     const allCategories = await Category.find({})
@@ -25,12 +31,33 @@ export const fetchAllCategories = expressAsyncHandler((async (req: any, res: Res
   }
 }));
 
+// @desc    Fetch a single category
+// @route   GET /api/category/:id
+// @access  Private
 export const fetchSingleCategory = expressAsyncHandler((async (req: any, res: Response) => {
   const { id } = req.params;
   try {
     const category = await Category.findById(id)
       .populate('user')
       .sort('-createdAt');
+    res.json(category);
+  } catch (error) {
+    res.json(error);
+  }
+}));
+
+// @desc    Update category
+// @route   PUT /api/category/:id
+// @access  Private
+export const updateCategory = expressAsyncHandler((async (req: any, res: Response) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByIdAndUpdate(id, {
+      title: req?.body?.title,
+    }, {
+      new: true,
+      runValidators: true,
+    });
     res.json(category);
   } catch (error) {
     res.json(error);
