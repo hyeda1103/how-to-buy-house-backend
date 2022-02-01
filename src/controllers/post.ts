@@ -65,7 +65,7 @@ export const fetchAllPost = expressAsyncHandler(async (req: Request, res: Respon
 });
 
 // @desc    Fetch a single post
-// @route   GET /api/posts
+// @route   GET /api/posts/:id
 // @access  Public
 export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -83,7 +83,7 @@ export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Res
 });
 
 // @desc    Update a post
-// @route   PUT /api/posts
+// @route   PUT /api/posts/:id
 // @access  Private
 export const updatePost = expressAsyncHandler(async (req: any, res: Response) => {
   const { id } = req.params;
@@ -95,6 +95,20 @@ export const updatePost = expressAsyncHandler(async (req: any, res: Response) =>
     }, {
       new: true,
     });
+    res.json(post);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// @desc    Delete a post
+// @route   DELETE /api/posts/:id
+// @access  Private
+export const deletePost = expressAsyncHandler(async (req: any, res: Response) => {
+  const { id } = req.params;
+  validateDB(id);
+  try {
+    const post = await Post.findOneAndDelete(id);
     res.json(post);
   } catch (error) {
     res.json(error);
