@@ -48,3 +48,25 @@ export const fetchSingleComment = expressAsyncHandler(async (req: any, res: Resp
     res.json(error);
   }
 });
+
+// @desc    Update a single comment
+// @route   PUT /api/comments/:id
+// @access  Private
+export const updateComment = expressAsyncHandler((async (req: any, res: Response) => {
+  const { id } = req.params;
+  const { postId, description } = req.body;
+
+  try {
+    const updated = await Comment.findByIdAndUpdate(id, {
+      post: postId,
+      user: req?.user,
+      description,
+    }, {
+      new: true,
+      runValidators: true,
+    });
+    res.json(updated);
+  } catch (error) {
+    res.json(error);
+  }
+}));
