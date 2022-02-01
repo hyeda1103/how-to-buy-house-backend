@@ -34,3 +34,17 @@ export const fetchAllComment = expressAsyncHandler(async (req: any, res: Respons
     res.json(error);
   }
 });
+
+// @desc    Fetch a single comment
+// @route   GET /api/comments/:id
+// @access  Private
+export const fetchSingleComment = expressAsyncHandler(async (req: any, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const comment = await Comment.findById(id);
+    res.json(comment);
+  } catch (error) {
+    res.json(error);
+  }
+});
