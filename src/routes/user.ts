@@ -1,6 +1,7 @@
 import express from 'express';
 
 import authMiddleware from '../middlewares/auth';
+import { imageUploadMiddleware, imageResizeMiddleware } from '../middlewares/imageUpload';
 import {
   generateVerificationToken,
   generateForgotPasswordToken,
@@ -18,6 +19,7 @@ import {
   unFollowUser,
   blockUser,
   unBlockUser,
+  uploadProfilePhoto,
 } from '../controllers/user';
 
 const userRoutes = express.Router();
@@ -25,6 +27,7 @@ const userRoutes = express.Router();
 userRoutes.get('/', fetchAllUser);
 userRoutes.post('/login', userLogin);
 userRoutes.post('/register', userRegister);
+userRoutes.put('/profile-photo', authMiddleware, imageUploadMiddleware.single('image'), imageResizeMiddleware, uploadProfilePhoto);
 userRoutes.post('/generate-verification-token', authMiddleware, generateVerificationToken);
 userRoutes.post('/generate-forgot-password-token', authMiddleware, generateForgotPasswordToken);
 userRoutes.post('/reset-password', authMiddleware, resetPassword);

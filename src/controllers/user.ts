@@ -3,9 +3,11 @@ import expressAsyncHandler from 'express-async-handler';
 import sgMail from '@sendgrid/mail';
 import crypto from 'crypto';
 
+import { ImageUploaded } from '../types';
 import validateDB from '../utils/validateDB';
 import User from '../models/user';
 import generateToken from '../config/token/generateToken';
+import cloudinaryImageUpload from '../utils/cloudinary';
 
 export const userRegister = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -299,9 +301,6 @@ export const resetPassword = expressAsyncHandler(async (req: any, res: Response)
       $gt: Date.now(),
     },
   }, {
-    $set: {
-      password,
-    },
     $unset: {
       passwordResetToken: '',
       passwordResetTokenExpires: '',
@@ -309,6 +308,27 @@ export const resetPassword = expressAsyncHandler(async (req: any, res: Response)
   });
 
   if (!user) throw new Error('Token Expired, try again later');
+
+  // Update the password
+  user.password = password;
   await user.save();
+  res.json(user);
+});
+
+// @desc    Upload Profile
+// @route   PUT /api/users/profile-photo
+// @access  Private
+export const uploadProfilePhoto = expressAsyncHandler(async (req: any, res: Response) => {
+  // Find the login user
+  const { _id } = req.user;
+  // Get the oath to img
+  const localPath = `public/images/profile/${req.file.filename}`;
+  // Upload to cloudinary
+  const imageUploaded = await cloudinaryImageUpload(localPath);
+  const user = await User.findByIdAndUpdate(_id, {
+    profilePhoto: (imageUploaded as ImageUploaded)?.url,
+  }, {
+    new: true,
+  });
   res.json(user);
 });

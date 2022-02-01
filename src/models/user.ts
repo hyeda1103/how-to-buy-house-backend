@@ -3,37 +3,15 @@ import mongoose, {
 } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { User } from '../types';
 
-interface IUser {
-  name: string;
-  email: string;
-  profilePhoto: string;
-  postCount: Number;
-  isBlocked: Boolean;
-  password: string;
-  isAdmin: boolean;
-  role: String;
-  isFollowing: Boolean;
-  isUnFollowing: Boolean;
-  isAccountVerified: Boolean;
-  accountVerificationToken: String;
-  accountVerificationTokenExpires: Date;
-  viewedBy: Array<typeof Schema.Types.ObjectId>;
-  followers: Array<typeof Schema.Types.ObjectId>;
-  following: Array<typeof Schema.Types.ObjectId>;
-  passwordChangeAt: Date;
-  passwordResetToken: String;
-  passwordResetTokenExpires: Date;
-  active: Boolean;
-}
-
-interface IUserDocument extends IUser, Document {
+interface UserDocument extends User, Document {
   matchPassword: (password: string) => Promise<boolean>
   createAccountVerificationToken: () => string
   createPasswordResetToken: () => string
 }
 
-const userSchema = new Schema<IUserDocument>(
+const userSchema = new Schema<UserDocument>(
   {
     name: {
       type: String,
@@ -130,6 +108,7 @@ const userSchema = new Schema<IUserDocument>(
 // Hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
+    console.log('!isModified');
     next();
   }
   // hash password
@@ -169,6 +148,6 @@ userSchema.methods.createPasswordResetToken = async function () {
   return resetPasswordToken;
 };
 
-const User = mongoose.model<IUserDocument>('User', userSchema);
+const UserModel = mongoose.model<UserDocument>('User', userSchema);
 
-export default User;
+export default UserModel;
