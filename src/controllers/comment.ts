@@ -2,6 +2,7 @@ import { Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 
 import Comment from '../models/comment';
+import validateDB from '../utils/validateDB';
 
 // @desc    Create a comment
 // @route   PUT /api/comments
@@ -40,6 +41,7 @@ export const fetchAllComment = expressAsyncHandler(async (req: any, res: Respons
 // @access  Private
 export const fetchSingleComment = expressAsyncHandler(async (req: any, res: Response) => {
   const { id } = req.params;
+  validateDB(id);
 
   try {
     const comment = await Comment.findById(id);
@@ -54,6 +56,7 @@ export const fetchSingleComment = expressAsyncHandler(async (req: any, res: Resp
 // @access  Private
 export const updateComment = expressAsyncHandler((async (req: any, res: Response) => {
   const { id } = req.params;
+  validateDB(id);
   const { postId, description } = req.body;
 
   try {
@@ -66,6 +69,21 @@ export const updateComment = expressAsyncHandler((async (req: any, res: Response
       runValidators: true,
     });
     res.json(updated);
+  } catch (error) {
+    res.json(error);
+  }
+}));
+
+// @desc    Delete a single comment
+// @route   DELETE /api/comments/:id
+// @access  Private
+export const deleteComment = expressAsyncHandler((async (req: any, res: Response) => {
+  const { id } = req.params;
+  validateDB(id);
+
+  try {
+    const comment = await Comment.findOneAndDelete(id);
+    res.json(comment);
   } catch (error) {
     res.json(error);
   }
