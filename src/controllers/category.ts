@@ -46,7 +46,7 @@ export const fetchSingleCategory = expressAsyncHandler((async (req: any, res: Re
   }
 }));
 
-// @desc    Update category
+// @desc    Update a category
 // @route   PUT /api/category/:id
 // @access  Private
 export const updateCategory = expressAsyncHandler((async (req: any, res: Response) => {
@@ -58,6 +58,19 @@ export const updateCategory = expressAsyncHandler((async (req: any, res: Respons
       new: true,
       runValidators: true,
     });
+    res.json(category);
+  } catch (error) {
+    res.json(error);
+  }
+}));
+
+// @desc    Delete a category
+// @route   DELETE /api/category/:id
+// @access  Private
+export const deleteCategory = expressAsyncHandler((async (req: any, res: Response) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByIdAndDelete(id);
     res.json(category);
   } catch (error) {
     res.json(error);
