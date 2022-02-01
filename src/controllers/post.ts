@@ -2,9 +2,11 @@ import { Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
 
+import { ImageUploaded } from 'types';
 import User from '../models/user';
 import Post from '../models/post';
 import validateDB from '../utils/validateDB';
+import cloudinaryImageUpload from '../utils/cloudinary';
 
 /* eslint-disable import/prefer-default-export */
 export const createPost = expressAsyncHandler(async (req: any, res: Response) => {
@@ -19,7 +21,6 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   });
 
   const isProfane = filter.isProfane(description) || filter.isProfane(title);
-  console.log(isProfane);
 
   // Block user
   if (isProfane) {
@@ -29,8 +30,16 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
     throw new Error('부적절한 단어가 포함되어 있어 포스팅을 완료할 수 없습니다. 또한 사용자는 블락되었습니다');
   }
 
+  // Get the oath to img
+  const localPath = `public/images/posts/${req.file.filename}`;
+  // Upload to cloudinary
+  const imageUploaded = await cloudinaryImageUpload(localPath);
   try {
-    const post = await Post.create(req.body);
+    const post = await Post.create({
+      ...req.body,
+      image: (imageUploaded as ImageUploaded)?.url,
+      user: _id,
+    });
     res.json(post);
   } catch (error) {
     res.json(error);
