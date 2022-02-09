@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Filter from 'bad-words';
-// import fs from 'fs';
+import fs from 'fs';
 
 import { ImageUploaded } from 'types';
 import User from '../models/user';
@@ -34,9 +34,9 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   }
 
   // Get the oath to img
-  // const localPath = `public/images/posts/${req.file.filename}`;
+  const localPath = `public/images/posts/${req.file.filename}`;
   // Upload to cloudinary
-  // const imageUploaded = await cloudinaryImageUpload(localPath);
+  const imageUploaded = await cloudinaryImageUpload(localPath);
   try {
     const post = await Post.create({
       ...req.body,

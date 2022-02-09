@@ -12,14 +12,20 @@ import cloudinaryImageUpload from '../utils/cloudinary';
 
 export const userRegister = expressAsyncHandler(
   async (req: Request, res: Response) => {
+    const { name, email, password } = req.body;
+
     // Check if user exists
-    const userExists = await User.findOne({ email: req.body.email });
-    if (userExists) throw new Error('이미 가입한 계정입니다');
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      res.status(400).json({
+        error: '이미 가입되어 있는 이메일 주소입니다',
+      });
+    }
     try {
       const user = await User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
+        name,
+        email,
+        password,
       });
       res.json(user);
     } catch (error) {

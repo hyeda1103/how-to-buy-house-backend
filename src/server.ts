@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 import connectDB from './config/db/dbConnect';
 import userRoutes from './routes/user';
@@ -18,6 +19,8 @@ connectDB();
 
 // Middleware
 app.use(express.json());
+// cors
+app.use(cors());
 
 // Route
 // Users route
