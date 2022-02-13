@@ -55,9 +55,15 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
 // @route   GET /api/posts
 // @access  Public
 export const fetchAllPost = expressAsyncHandler(async (req: Request, res: Response) => {
+  const hasCategory = req.query.category;
   try {
-    const posts = await Post.find({}).populate('user');
-    res.json(posts);
+    if (hasCategory) {
+      const posts = await Post.find({ category: hasCategory }).populate('user');
+      res.json(posts);
+    } else {
+      const posts = await Post.find({}).populate('user');
+      res.json(posts);
+    }
   } catch (error) {
     res.json(error);
   }
