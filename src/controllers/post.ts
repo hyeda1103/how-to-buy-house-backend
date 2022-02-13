@@ -76,7 +76,7 @@ export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Res
   const { id } = req.params;
   validateDB(id);
   try {
-    const post = await Post.findById(id).populate('dislikes').populate('likes');
+    const post = await Post.findById(id).populate('dislikes').populate('likes').populate('user');
     // Update number of views
     await Post.findByIdAndUpdate(id, {
       $inc: { viewCounts: 1 },
