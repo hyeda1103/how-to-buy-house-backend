@@ -76,7 +76,7 @@ export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Res
   const { id } = req.params;
   validateDB(id);
   try {
-    const post = await Post.findById(id).populate('dislikes').populate('likes').populate('user');
+    const post = await Post.findById(id).populate('disLikes').populate('likes').populate('user');
     // Update number of views
     await Post.findByIdAndUpdate(id, {
       $inc: { viewCounts: 1 },
@@ -130,15 +130,15 @@ export const toggleLikeToPost = expressAsyncHandler(async (req: any, res: Respon
   // Find the login user
   const loginUserId = req.user?.id;
   // Find if this user has liked this post already
-  const { isLiked, dislikes } = post;
+  const isLiked = post?.isLiked;
   // Check if this user has disliked this post
-  const alreadyDisLiked = dislikes?.find(
+  const alreadyDisLiked = post?.disLikes?.find(
     (userId: string) => userId?.toString() === loginUserId.toString(),
   );
-  // Remove the user from dislikes array if exists
+  // Remove the user from disLikes array if exists
   if (alreadyDisLiked) {
     await Post.findByIdAndUpdate(postId, {
-      $pull: { dislikes: loginUserId },
+      $pull: { disLikes: loginUserId },
       isDisLiked: false,
     }, {
       new: true,
@@ -167,7 +167,7 @@ export const toggleLikeToPost = expressAsyncHandler(async (req: any, res: Respon
 });
 
 // @desc    Dislike a post
-// @route   PUT /api/posts/dislikes
+// @route   PUT /api/posts/disLikes
 // @access  Private
 export const toggleDislikeToPost = expressAsyncHandler(async (req: any, res: Response) => {
   // Find the post to be disliked
@@ -176,9 +176,9 @@ export const toggleDislikeToPost = expressAsyncHandler(async (req: any, res: Res
   // Find the login user
   const loginUserId = req.user?.id;
   // Check if the user has already disLiked this post
-  const { likes, isDisLiked } = post;
+  const isDisLiked = post?.isDisLiked;
   // Check if the user has already liked this post
-  const alreadyLiked = likes?.find(
+  const alreadyLiked = post?.likes?.find(
     (userId: string) => userId.toString() === loginUserId?.toString(),
   );
   // Remove the user from likes array if exists
@@ -191,10 +191,10 @@ export const toggleDislikeToPost = expressAsyncHandler(async (req: any, res: Res
     });
   }
   // Toggle
-  // Remove this user from dislikes if already disliked
+  // Remove this user from disLikes if already disliked
   if (isDisLiked) {
     const post = await Post.findByIdAndUpdate(postId, {
-      $pull: { dislikes: loginUserId },
+      $pull: { disLikes: loginUserId },
       isDisLiked: false,
     }, {
       new: true,
@@ -202,7 +202,7 @@ export const toggleDislikeToPost = expressAsyncHandler(async (req: any, res: Res
     res.json(post);
   } else {
     const post = await Post.findByIdAndUpdate(postId, {
-      $push: { dislikes: loginUserId },
+      $push: { disLikes: loginUserId },
       isDisLiked: true,
     }, {
       new: true,
