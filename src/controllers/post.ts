@@ -58,10 +58,16 @@ export const fetchAllPost = expressAsyncHandler(async (req: Request, res: Respon
   const hasCategory = req.query.category;
   try {
     if (hasCategory) {
-      const posts = await Post.find({ category: hasCategory }).populate('user');
+      const posts = await Post.find({ category: hasCategory })
+        .populate('user')
+        .populate('comments')
+        .sort('-createdAt');
       res.json(posts);
     } else {
-      const posts = await Post.find({}).populate('user');
+      const posts = await Post.find({})
+        .populate('user')
+        .populate('comments')
+        .sort('-createdAt');
       res.json(posts);
     }
   } catch (error) {
@@ -76,7 +82,11 @@ export const fetchSinglePost = expressAsyncHandler(async (req: Request, res: Res
   const { id } = req.params;
   validateDB(id);
   try {
-    const post = await Post.findById(id).populate('disLikes').populate('likes').populate('user');
+    const post = await Post.findById(id)
+      .populate('user')
+      .populate('disLikes')
+      .populate('likes')
+      .populate('comments');
     // Update number of views
     await Post.findByIdAndUpdate(id, {
       $inc: { viewCounts: 1 },
