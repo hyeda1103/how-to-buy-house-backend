@@ -15,6 +15,6 @@ commentRoutes.post('/', authMiddleware, createComment);
 commentRoutes.get('/', authMiddleware, fetchAllComment);
 commentRoutes.get('/:id', authMiddleware, fetchSingleComment);
 commentRoutes.put('/:id', authMiddleware, updateComment);
-commentRoutes.delete('/:id', deleteComment);
+commentRoutes.delete('/:id', authMiddleware, deleteComment);
 
 export default commentRoutes;

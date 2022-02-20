@@ -82,7 +82,7 @@ export const deleteComment = expressAsyncHandler((async (req: any, res: Response
   validateDB(id);
 
   try {
-    const comment = await Comment.findOneAndDelete(id);
+    const comment = await Comment.findByIdAndDelete(id);
     res.json(comment);
   } catch (error) {
     res.json(error);
