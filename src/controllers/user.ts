@@ -4,11 +4,12 @@ import sgMail from '@sendgrid/mail';
 import crypto from 'crypto';
 import fs from 'fs';
 
-import { ImageUploaded } from '../types';
+import * as T from '../types';
 import validateDB from '../utils/validateDB';
 import User from '../models/user';
 import generateToken from '../config/token/generateToken';
 import cloudinaryImageUpload from '../utils/cloudinary';
+import blockedUser from '../utils/blockUser';
 
 export const userRegister = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -38,9 +39,11 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
   const { email, password } = req.body;
   // Check if user exists
   const userFound = await User.findOne({ email });
+  // check if blocked
+  if (userFound?.isBlocked) throw new Error('Access Denied You have been blocked');
   if (userFound && (await userFound.matchPassword(password))) {
     const {
-      _id, name, email, profilePhoto, isAdmin,
+      _id, name, email, profilePhoto, isAdmin, isAccountVerified,
     } = userFound;
     res.json({
       _id,
@@ -49,6 +52,7 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
       profilePhoto,
       isAdmin,
       token: generateToken(userFound.id),
+      isVerified: isAccountVerified,
     });
   } else {
     res.status(401);
@@ -58,7 +62,7 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
 
 export const fetchAllUser = expressAsyncHandler(async (req: Request, res: Response) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).populate('posts');
     res.json(users);
   } catch (error) {
     res.json(error);
@@ -89,12 +93,29 @@ export const fetchUserDetails = expressAsyncHandler(async (req: Request, res: Re
   }
 });
 
-export const fetchUserProfile = expressAsyncHandler(async (req: Request, res: Response) => {
+export const fetchUserProfile = expressAsyncHandler(async (req: any, res: Response) => {
   const { id } = req.params;
   validateDB(id);
+  // 1.Find the login user
+  // 2. Check this particular if the login user exists in the array of viewedBy
+
+  // Get the login user
+  const loginUserId = req?.user?._id?.toString();
   try {
-    const profile = await User.findById(id);
-    res.json(profile);
+    const myProfile = await User.findById(id)
+      .populate('posts')
+      .populate('viewedBy');
+    const alreadyViewed = myProfile?.viewedBy?.find((
+      user: any,
+    ) => user?._id?.toString() === loginUserId);
+    if (alreadyViewed) {
+      res.json(myProfile);
+    } else {
+      const profile = await User.findByIdAndUpdate(myProfile?._id, {
+        $push: { viewedBy: loginUserId },
+      });
+      res.json(profile);
+    }
   } catch (error) {
     res.json(error);
   }
@@ -102,14 +123,20 @@ export const fetchUserProfile = expressAsyncHandler(async (req: Request, res: Re
 
 export const updateUserProfile = expressAsyncHandler(async (req: any, res: Response) => {
   const { _id } = req.user;
+  // block
+  blockedUser(req?.user);
   validateDB(_id);
-  const user = await User.findByIdAndUpdate(_id, {
-    name: req.body.name,
-    email: req.body.email,
-  }, {
-    new: true,
-    runValidators: true,
-  });
+  const user = await User.findByIdAndUpdate(
+    _id,
+    {
+      name: req?.body?.name,
+      email: req?.body?.email,
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
   res.json(user);
 });
 
@@ -118,61 +145,74 @@ export const updateUserPassword = expressAsyncHandler(async (req: any, res: Resp
   const { _id } = req.user;
   const { password } = req.body;
   validateDB(_id);
-  // find the user by _id
+  // Find the user by _id
   const user = await User.findById(_id);
+
   if (user && password) {
     user.password = password;
     const updatedUser = await user.save();
     res.json(updatedUser);
+  } else {
+    res.json(user);
   }
 });
 
 export const followUser = expressAsyncHandler(async (req: any, res: Response) => {
+  // 1.Find the user you want to follow and update it's followers field
+  // 2. Update the login user following field
   const { followId } = req.body;
-  const { id: loginUserId } = req.user;
+  const loginUserId = req.user.id;
 
-  // 0. Find the target user and check if the login id exist
+  // find the target user and check if the login id exist
   const targetUser = await User.findById(followId);
 
-  const alreadyFollowing = targetUser?.followers.find(
-    (user) => user.toString() === loginUserId.toString(),
+  const alreadyFollowing = targetUser?.followers?.find(
+    (user) => user?.toString() === loginUserId.toString(),
   );
 
   if (alreadyFollowing) throw new Error('You have already followed this user');
 
   // 1. Find the user you want to follow and update it's followers field
-  await User.findByIdAndUpdate(followId, {
-    $push: { followers: loginUserId },
-    isFollowing: true,
-  }, {
-    new: true,
-  });
+  await User.findByIdAndUpdate(
+    followId,
+    {
+      $push: { followers: loginUserId },
+      isFollowing: true,
+    },
+    { new: true },
+  );
 
   // 2. Update the login user following field
-  await User.findByIdAndUpdate(loginUserId, {
-    $push: { following: followId },
-  }, {
-    new: true,
-  });
+  await User.findByIdAndUpdate(
+    loginUserId,
+    {
+      $push: { following: followId },
+    },
+    { new: true },
+  );
   res.json('You have successfully followed this user');
 });
 
 export const unFollowUser = expressAsyncHandler(async (req: any, res: Response) => {
   const { unFollowId } = req.body;
-  const { id: loginUserId } = req.user;
+  const loginUserId = req.user.id;
 
-  await User.findByIdAndUpdate(unFollowId, {
-    $pull: { followers: loginUserId },
-    isFollowing: false,
-  }, {
-    new: true,
-  });
+  await User.findByIdAndUpdate(
+    unFollowId,
+    {
+      $pull: { followers: loginUserId },
+      isFollowing: false,
+    },
+    { new: true },
+  );
 
-  await User.findByIdAndUpdate(loginUserId, {
-    $pull: { following: unFollowId },
-  }, {
-    new: true,
-  });
+  await User.findByIdAndUpdate(
+    loginUserId,
+    {
+      $pull: { following: unFollowId },
+    },
+    { new: true },
+  );
 
   res.json('You have successfully unfollowed this user');
 });
@@ -181,12 +221,13 @@ export const blockUser = expressAsyncHandler(async (req: any, res: Response) => 
   const { id } = req.params;
   validateDB(id);
 
-  const user = await User.findByIdAndUpdate(id, {
-    isBlocked: true,
-  }, {
-    new: true,
-  });
-
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      isBlocked: true,
+    },
+    { new: true },
+  );
   res.json(user);
 });
 
@@ -194,12 +235,13 @@ export const unBlockUser = expressAsyncHandler(async (req: any, res: Response) =
   const { id } = req.params;
   validateDB(id);
 
-  const user = await User.findByIdAndUpdate(id, {
-    isBlocked: false,
-  }, {
-    new: true,
-  });
-
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      isBlocked: false,
+    },
+    { new: true },
+  );
   res.json(user);
 });
 
@@ -333,7 +375,7 @@ export const uploadProfilePhoto = expressAsyncHandler(async (req: any, res: Resp
   // Upload to cloudinary
   const imageUploaded = await cloudinaryImageUpload(localPath);
   await User.findByIdAndUpdate(_id, {
-    profilePhoto: (imageUploaded as ImageUploaded)?.url,
+    profilePhoto: (imageUploaded as T.ImageUploaded)?.url,
   }, {
     new: true,
   });

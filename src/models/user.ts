@@ -115,7 +115,6 @@ userSchema.virtual('posts', {
 // Hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    console.log('!isModified');
     next();
   }
   // hash password

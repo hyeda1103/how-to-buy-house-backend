@@ -24,10 +24,10 @@ import {
 
 const userRoutes = express.Router();
 
-userRoutes.get('/', fetchAllUser);
 userRoutes.post('/login', userLogin);
 userRoutes.post('/register', userRegister);
 userRoutes.put('/profile-photo', authMiddleware, imageUploadMiddleware.single('image'), imageResizeMiddleware, uploadProfilePhoto);
+userRoutes.get('/', authMiddleware, fetchAllUser);
 userRoutes.post('/generate-verification-token', authMiddleware, generateVerificationToken);
 userRoutes.post('/generate-forgot-password-token', authMiddleware, generateForgotPasswordToken);
 userRoutes.post('/reset-password', authMiddleware, resetPassword);
