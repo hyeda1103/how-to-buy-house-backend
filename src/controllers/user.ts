@@ -264,7 +264,7 @@ export const generateVerificationToken = expressAsyncHandler(async (req: any, re
       otherwise ignore this message
       <a href="http://localhost:3000/verify-account/${verificationToken}">Click to verify your account</a>.`;
     const message = {
-      to: 'dalgona92@gmail.com',
+      to: user?.email,
       from: 'mongryong.in.the.house@gmail.com',
       subject: 'Verify Account',
       html: resetURL,
