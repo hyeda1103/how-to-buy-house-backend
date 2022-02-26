@@ -26,11 +26,11 @@ const userRoutes = express.Router();
 
 userRoutes.post('/login', userLogin);
 userRoutes.post('/register', userRegister);
+userRoutes.put('/reset-password', resetPassword);
+userRoutes.post('/generate-forgot-password-token', generateForgotPasswordToken);
 userRoutes.put('/profile-photo', authMiddleware, imageUploadMiddleware.single('image'), imageResizeMiddleware, uploadProfilePhoto);
 userRoutes.get('/', authMiddleware, fetchAllUser);
 userRoutes.post('/generate-verification-token', authMiddleware, generateVerificationToken);
-userRoutes.post('/generate-forgot-password-token', authMiddleware, generateForgotPasswordToken);
-userRoutes.post('/reset-password', authMiddleware, resetPassword);
 userRoutes.put('/verify-account', authMiddleware, accountVerification);
 userRoutes.put('/password', authMiddleware, updateUserPassword);
 userRoutes.put('/follow', authMiddleware, followUser);

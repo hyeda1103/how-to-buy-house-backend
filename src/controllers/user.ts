@@ -307,7 +307,7 @@ export const accountVerification = expressAsyncHandler(async (req: any, res: Res
 
 // @desc    Generate token for forgot password functionality
 // @route   PUT /api/users/generate-forgot-password-token
-// @access  Private
+// @access  Public
 export const generateForgotPasswordToken = expressAsyncHandler(async (req: any, res: Response) => {
   sgMail.setApiKey(`${process.env.SENDGRID_API_KEY}`);
 
@@ -339,7 +339,7 @@ export const generateForgotPasswordToken = expressAsyncHandler(async (req: any, 
 
 // @desc    Reset Password
 // @route   PUT /api/users/generate-forgot-password-token
-// @access  Private
+// @access  Public
 export const resetPassword = expressAsyncHandler(async (req: any, res: Response) => {
   const { token, password } = req.body;
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
