@@ -8,8 +8,8 @@ import authMiddleware from '../middlewares/auth';
 const categoryRoutes = express.Router();
 
 categoryRoutes.post('/', authMiddleware, createCategory);
-categoryRoutes.get('/', authMiddleware, fetchAllCategories);
-categoryRoutes.get('/:id', authMiddleware, fetchSingleCategory);
+categoryRoutes.get('/', fetchAllCategories);
+categoryRoutes.get('/:id', fetchSingleCategory);
 categoryRoutes.put('/:id', authMiddleware, updateCategory);
 categoryRoutes.delete('/:id', authMiddleware, deleteCategory);
 

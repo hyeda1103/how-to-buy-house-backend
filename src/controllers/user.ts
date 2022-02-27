@@ -41,6 +41,11 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
   const userFound = await User.findOne({ email });
   // check if blocked
   if (userFound?.isBlocked) throw new Error('Access Denied You have been blocked');
+  if (!userFound) {
+    res.status(401).json({
+      error: '가입한 이메일 주소가 아닙니다',
+    });
+  }
   if (userFound && (await userFound.matchPassword(password))) {
     const {
       _id, name, email, profilePhoto, isAdmin, isAccountVerified,
@@ -55,8 +60,9 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
       isVerified: isAccountVerified,
     });
   } else {
-    res.status(401);
-    throw new Error('Invalid Login Credentials');
+    res.status(401).json({
+      error: '이메일과 비밀번호가 일치하지 않습니다',
+    });
   }
 });
 

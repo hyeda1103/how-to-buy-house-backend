@@ -19,7 +19,7 @@ export const createCategory = expressAsyncHandler((async (req: any, res: Respons
 
 // @desc    Fetch all categories
 // @route   GET /api/category
-// @access  Private
+// @access  Public
 export const fetchAllCategories = expressAsyncHandler((async (req: any, res: Response) => {
   try {
     const allCategories = await Category.find({})
@@ -33,7 +33,7 @@ export const fetchAllCategories = expressAsyncHandler((async (req: any, res: Res
 
 // @desc    Fetch a single category
 // @route   GET /api/category/:id
-// @access  Private
+// @access  Public
 export const fetchSingleCategory = expressAsyncHandler((async (req: any, res: Response) => {
   const { id } = req.params;
   try {
