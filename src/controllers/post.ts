@@ -123,7 +123,7 @@ export const deletePost = expressAsyncHandler(async (req: any, res: Response) =>
   const { id } = req.params;
   validateDB(id);
   try {
-    const post = await Post.findOneAndDelete(id);
+    const post = await Post.findByIdAndDelete(id);
     res.json(post);
   } catch (error) {
     res.json(error);
