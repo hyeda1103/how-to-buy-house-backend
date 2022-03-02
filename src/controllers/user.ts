@@ -40,7 +40,11 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
   // Check if user exists
   const userFound = await User.findOne({ email });
   // check if blocked
-  if (userFound?.isBlocked) throw new Error('Access Denied You have been blocked');
+  if (userFound?.isBlocked) {
+    res.status(401).json({
+      error: '서비스 정책 위반으로 차단된 사용자입니다',
+    });
+  }
   if (!userFound) {
     res.status(401).json({
       error: '가입한 이메일 주소가 아닙니다',
@@ -56,7 +60,7 @@ export const userLogin = expressAsyncHandler(async (req: Request, res: Response)
       email,
       profilePhoto,
       isAdmin,
-      token: generateToken(userFound.id),
+      token: generateToken(_id),
       isVerified: isAccountVerified,
     });
   } else {
@@ -320,14 +324,17 @@ export const generateForgotPasswordToken = expressAsyncHandler(async (req: any, 
   // Find the user by email address
   const { email } = req.body;
   const user = await User.findOne({ email });
-  if (!user) throw new Error('User Not Found');
-
+  if (!user) {
+    res.status(400).json({
+      error: '가입하지 않은 이메일 주소입니다',
+    });
+  }
   try {
-    const resetPasswordToken = await user.createPasswordResetToken();
-    await user.save();
+    const resetPasswordToken = await user?.createPasswordResetToken();
+    await user?.save();
 
     // Build your message
-    const resetURL = `A verification message is successfully sent to ${user.email}. Reset now within 10 minutes,
+    const resetURL = `A verification message is successfully sent to ${user?.email}. Reset now within 10 minutes,
       otherwise ignore this message
       <a href="http://localhost:3000/reset-password/${resetPasswordToken}">Click to verify your account</a>.`;
     const message = {
@@ -339,6 +346,7 @@ export const generateForgotPasswordToken = expressAsyncHandler(async (req: any, 
     await sgMail.send(message);
     res.json(resetURL);
   } catch (error) {
+    console.log(error);
     res.json(error);
   }
 });

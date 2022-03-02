@@ -6,10 +6,18 @@ import Category from '../models/category';
 // @route   POST /api/category
 // @access  Private
 export const createCategory = expressAsyncHandler((async (req: any, res: Response) => {
+  const { _id } = req.user;
+  const { title } = req.body;
+  const categoryExists = await Category.findOne({ title });
+  if (categoryExists) {
+    res.status(400).json({
+      error: '이미 존재하는 카테고리입니다',
+    });
+  }
   try {
     const category = await Category.create({
-      user: req.user._id,
-      title: req.body.title,
+      user: _id,
+      title,
     });
     res.json(category);
   } catch (error) {
@@ -51,9 +59,17 @@ export const fetchSingleCategory = expressAsyncHandler((async (req: any, res: Re
 // @access  Private
 export const updateCategory = expressAsyncHandler((async (req: any, res: Response) => {
   const { id } = req.params;
+  const { title } = req.body;
+  const categoryExists = await Category.findOne({ title });
+  if (categoryExists) {
+    res.status(400).json({
+      error: '동일한 이름의 카테고리가 이미 있습니다',
+    });
+  }
+
   try {
     const category = await Category.findByIdAndUpdate(id, {
-      title: req?.body?.title,
+      title,
     }, {
       new: true,
       runValidators: true,

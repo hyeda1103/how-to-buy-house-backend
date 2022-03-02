@@ -30,7 +30,9 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
     await User.findByIdAndUpdate(_id, {
       isBlocked: true,
     });
-    throw new Error('부적절한 단어가 포함되어 있어 포스팅을 완료할 수 없습니다. 또한 사용자는 블락되었습니다');
+    res.status(400).json({
+      error: '부적절한 단어가 포함되어 있어 포스팅을 완료할 수 없습니다. 또한 사용자는 블락되었습니다',
+    });
   }
 
   // Get the oath to img
