@@ -6,14 +6,17 @@ import path from 'path';
 // Storage
 const multerStorage = multer.memoryStorage();
 
+const ableExts = ['.jpg', '.jpeg', '.gif', '.png', '.mp4'];
+
 // Check File type
 const multerFilter: multer.Options['fileFilter'] = (
   req,
   file,
   cb,
 ) => {
+  const ext = path.extname(file.originalname);
   // Check file type
-  if (file.mimetype.startsWith('image')) {
+  if (ableExts.includes(ext)) {
     cb(null, true);
   } else {
     // Rejected files
@@ -54,6 +57,23 @@ export const PostImageResizeMiddleware = async (
 
   await sharp(req.file.buffer)
     .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(path.join(`public/images/posts/${req.file.filename}`));
+
+  return next();
+};
+
+export const UploadImageMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // Check if there is no file
+  if (!req.file) return next();
+  req.file.filename = `user-${Date.now()}-${req.file.originalname}`;
+
+  await sharp(req.file.buffer)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toFile(path.join(`public/images/posts/${req.file.filename}`));

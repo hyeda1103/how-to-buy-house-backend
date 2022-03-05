@@ -53,6 +53,23 @@ export const createPost = expressAsyncHandler(async (req: any, res: Response) =>
   }
 });
 
+// @desc    Upload files
+// @route   POST /api/posts/upload-file
+// @access  Private
+export const uploadFile = expressAsyncHandler(async (req: any, res: any) => {
+  // Get the oath to img
+  const localPath = `public/images/posts/${req.file.filename}`;
+  // Upload to cloudinary
+  const imageUploaded = await cloudinaryImageUpload(localPath);
+  try {
+    // Remove uploaded image
+    fs.unlinkSync(localPath);
+    res.json((imageUploaded as ImageUploaded)?.url);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
 // @desc    Fetch all post
 // @route   GET /api/posts
 // @access  Public
