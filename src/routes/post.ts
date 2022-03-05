@@ -4,7 +4,7 @@ import authMiddleware from '../middlewares/auth';
 import { imageUploadMiddleware, PostImageResizeMiddleware, UploadImageMiddleware } from '../middlewares/imageUpload';
 import {
   createPost,
-  fetchAllPost,
+  fetchPostsByKeyword,
   fetchSinglePost,
   updatePost,
   deletePost,
@@ -16,7 +16,7 @@ import {
 const postRoutes = express.Router();
 
 postRoutes.post('/', authMiddleware, imageUploadMiddleware.single('image'), PostImageResizeMiddleware, createPost);
-postRoutes.get('/', fetchAllPost);
+postRoutes.get('/', fetchPostsByKeyword);
 postRoutes.post('/upload-file', imageUploadMiddleware.single('file'), UploadImageMiddleware, uploadFile);
 postRoutes.put('/likes', authMiddleware, toggleLikeToPost);
 postRoutes.put('/dislikes', authMiddleware, toggleDislikeToPost);

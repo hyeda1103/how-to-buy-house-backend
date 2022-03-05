@@ -94,6 +94,51 @@ export const fetchAllPost = expressAsyncHandler(async (req: Request, res: Respon
   }
 });
 
+// @desc    Fetch posts by keyword
+// @route   GET /api/posts
+// @access  Public
+export const fetchPostsByKeyword = expressAsyncHandler(async (req: Request, res: Response) => {
+  const keyword = req.query.keyword
+    ? {
+      $or: [
+        {
+          title: {
+            $regex: req.query.keyword,
+            $options: 'i',
+          },
+        },
+        {
+          description: {
+            $regex: req.query.keyword,
+            $options: 'i',
+          },
+        },
+      ],
+    }
+    : {};
+  const category = req.query.category
+    ? {
+      category: {
+        $regex: req.query.category,
+        $options: 'i',
+      },
+    }
+    : {};
+  const count = await Post.countDocuments({ ...keyword, ...category });
+  const posts = await Post.find({ ...keyword, ...category })
+    .populate('user')
+    .populate('comments')
+    .sort('-createdAt');
+
+  if (count) {
+    res.json(posts);
+  } else {
+    res.status(404).json({
+      error: `키워드: ${req.query.keyword}, 카테고리: ${req.query.category}에 해당하는 포스트가 없습니다`,
+    });
+  }
+});
+
 // @desc    Fetch a single post
 // @route   GET /api/posts/:id
 // @access  Public
