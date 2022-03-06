@@ -4,6 +4,14 @@ import expressAsyncHandler from 'express-async-handler';
 import Comment from '../models/comment';
 import validateDB from '../utils/validateDB';
 
+interface IComment {
+  user: any
+  post: string
+  description: string
+  parentId?: string
+  depth?: number
+}
+
 // @desc    Create a comment
 // @route   PUT /api/comments
 // @access  Private
@@ -11,16 +19,23 @@ export const createComment = expressAsyncHandler(async (req: any, res: Response)
   // Get the user
   const { user } = req;
   // Get the post Id
-  const { postId, description } = req.body;
+  const {
+    postId, description, parentId, depth,
+  } = req.body;
+  const data: IComment = {
+    user,
+    post: postId,
+    description,
+    parentId,
+    depth,
+  };
   try {
-    const comment = await Comment.create({
-      post: postId,
-      user,
-      description,
-    });
+    const comment = await Comment.create(data);
     res.json(comment);
   } catch (error) {
-    res.json(error);
+    res.status(500).json({
+      error,
+    });
   }
 });
 
@@ -70,7 +85,9 @@ export const updateComment = expressAsyncHandler((async (req: any, res: Response
     });
     res.json(updated);
   } catch (error) {
-    res.json(error);
+    res.status(500).json({
+      error,
+    });
   }
 }));
 

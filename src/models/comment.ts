@@ -6,6 +6,14 @@ const commentSchema = new Schema({
     ref: 'Post',
     required: [true, '포스트가 있어야 합니다'],
   },
+  depth: {
+    type: Number,
+    default: 1,
+  },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+  },
   user: {
     type: Object,
     required: [true, '사용자가 있어야 합니다'],
