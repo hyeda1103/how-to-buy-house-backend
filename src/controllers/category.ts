@@ -9,17 +9,18 @@ export const createCategory = expressAsyncHandler((async (req: any, res: Respons
   const { _id } = req.user;
   const { title } = req.body;
   const categoryExists = await Category.findOne({ title });
-  if (categoryExists) {
-    res.status(400).json({
-      error: '이미 존재하는 카테고리입니다',
-    });
-  }
   try {
-    const category = await Category.create({
-      user: _id,
-      title,
-    });
-    res.json(category);
+    if (categoryExists) {
+      res.status(400).json({
+        error: '이미 존재하는 카테고리입니다',
+      });
+    } else {
+      const category = await Category.create({
+        user: _id,
+        title,
+      });
+      res.json(category);
+    }
   } catch (error) {
     res.json(error);
   }
@@ -61,20 +62,21 @@ export const updateCategory = expressAsyncHandler((async (req: any, res: Respons
   const { id } = req.params;
   const { title } = req.body;
   const categoryExists = await Category.findOne({ title });
-  if (categoryExists) {
-    res.status(400).json({
-      error: '동일한 이름의 카테고리가 이미 있습니다',
-    });
-  }
 
   try {
-    const category = await Category.findByIdAndUpdate(id, {
-      title,
-    }, {
-      new: true,
-      runValidators: true,
-    });
-    res.json(category);
+    if (categoryExists) {
+      res.status(400).json({
+        error: '이미 존재하는 카테고리입니다',
+      });
+    } else {
+      const category = await Category.findByIdAndUpdate(id, {
+        title,
+      }, {
+        new: true,
+        runValidators: true,
+      });
+      res.json(category);
+    }
   } catch (error) {
     res.json(error);
   }
